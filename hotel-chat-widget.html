@@ -378,7 +378,10 @@ function toggleChat() {
 
   if (isOpen && !greeted) {
     greeted = true;
-    setTimeout(() => sendToAgent('Hola'), 600);
+    setTimeout(() => {
+      addMessage('¡Hola! Soy Dina González del Hotel Ojos del Río. ¿En qué le puedo ayudar? ¿Le puedo ayudar con una reserva o tiene alguna consulta sobre el hotel?', 'bot');
+      history.push({ role: 'assistant', content: '¡Hola! Soy Dina González del Hotel Ojos del Río. ¿En qué le puedo ayudar? ¿Le puedo ayudar con una reserva o tiene alguna consulta sobre el hotel?' });
+    }, 600);
   }
 }
 
@@ -433,20 +436,19 @@ async function sendToAgent(message) {
   isWaiting = true;
   document.getElementById('send-btn').disabled = true;
 
-  history.push({ role: 'user', content: message });
   showTyping();
 
   try {
     const res = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, message, history: history.slice(0, -1) })
+      body: JSON.stringify({ sessionId, message, history })
     });
 
     const data = await res.json();
     const reply = data.reply || 'Lo siento, hubo un error. Por favor intente de nuevo.';
+    // Use history from N8N which already includes both user and assistant messages
     history = data.history || history;
-    history.push({ role: 'assistant', content: reply });
 
     addMessage(reply, 'bot');
   } catch (err) {
